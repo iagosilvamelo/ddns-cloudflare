@@ -10,20 +10,18 @@ $apiToken = "SEU_API_TOKEN_AQUI"
 # O nome exato da sua Zona (seu domínio principal). Ex: "meudominio.com"
 $zoneName = "seudominio.com"
 
-# O nome completo do registro DNS que você quer atualizar. Ex: "casa.meudominio.com"
-$recordName = "seu.subdominio.com"
+# O nome completo do registro DNS que você quer atualizar. Ex: "remoto.seudominio.com"
+$recordName = "remoto.seudominio.com"
 
 # --- FIM DAS CONFIGURAÇÕES ---
 
 
-# Cabeçalho para autenticação na API da Cloudflare
 $headers = @{
     "Authorization" = "Bearer $apiToken"
     "Content-Type"  = "application/json"
 }
 
 try {
-    # 1. Obter o Zone ID a partir do nome da zona
     Write-Host "Procurando Zone ID para a zona '$zoneName'..."
     $zoneResult = Invoke-RestMethod -Uri "https://api.cloudflare.com/client/v4/zones?name=$zoneName" -Method Get -Headers $headers
     $zoneId = $zoneResult.result[0].id
@@ -34,7 +32,6 @@ try {
     }
     Write-Host "Zone ID encontrado: $zoneId"
 
-    # 2. Obter o ID e o IP atual do registro DNS na Cloudflare
     Write-Host "Buscando informações do registro DNS '$recordName'..."
     $recordResult = Invoke-RestMethod -Uri "https://api.cloudflare.com/client/v4/zones/$zoneId/dns_records?type=A&name=$recordName" -Method Get -Headers $headers
     $recordId = $recordResult.result[0].id
@@ -46,12 +43,10 @@ try {
     }
     Write-Host "IP registrado na Cloudflare: $dnsIp"
 
-    # 3. Obter o seu endereço IP público atual
     Write-Host "Verificando seu IP público atual..."
     $currentIp = Invoke-RestMethod -Uri "https://api.ipify.org"
     Write-Host "Seu IP público atual é: $currentIp"
 
-    # 4. Comparar os IPs e atualizar se necessário
     if ($currentIp -eq $dnsIp) {
         Write-Host "IPs são os mesmos. Nenhuma atualização é necessária."
     }
